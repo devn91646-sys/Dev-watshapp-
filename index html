@@ -1,0 +1,582 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#075e54">
+<title>Dev WhatsApp</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#e9edef;color:#222}
+button,input{font:inherit}
+button{cursor:pointer;border:0}
+.hidden{display:none!important}
+
+.auth{
+ min-height:100vh;display:grid;place-items:center;padding:20px;
+ background:linear-gradient(135deg,#075e54,#25d366);
+}
+.auth-card{
+ background:white;width:100%;max-width:400px;padding:28px;
+ border-radius:20px;box-shadow:0 15px 40px #0003;
+}
+.logo{text-align:center;font-size:48px}
+.auth-card h2{text-align:center;color:#075e54;margin:8px 0 22px}
+.field{
+ width:100%;padding:14px;border:1px solid #ddd;
+ border-radius:10px;margin:7px 0;outline:none;
+}
+.field:focus{border-color:#128c7e}
+.btn{
+ padding:13px;background:#128c7e;color:white;
+ border-radius:10px;font-weight:bold;
+}
+.full{width:100%;margin-top:10px}
+.switch{text-align:center;margin-top:18px;font-size:14px}
+.switch span{color:#128c7e;font-weight:bold;cursor:pointer}
+#error{color:#d32f2f;font-size:13px;margin-top:12px;text-align:center}
+
+#main{
+ height:100dvh;max-width:1250px;margin:auto;
+ display:flex;background:white;overflow:hidden;
+}
+.sidebar{
+ width:350px;min-width:290px;display:flex;
+ flex-direction:column;border-right:1px solid #ddd;
+}
+.top{
+ background:#075e54;color:white;padding:16px;
+ display:flex;justify-content:space-between;align-items:center;
+}
+.top h2{font-size:21px}
+.top small{display:block;margin-top:5px}
+.logout{background:white;color:#075e54;padding:9px;border-radius:8px}
+.search{padding:12px;background:#f0f2f5}
+.search input{
+ width:100%;padding:12px;border:0;border-radius:9px;outline:none;
+}
+.add{display:flex;gap:7px;padding:10px}
+.add input{
+ flex:1;min-width:0;padding:11px;border:1px solid #ddd;
+ border-radius:9px;
+}
+.add button{background:#128c7e;color:white;padding:10px;border-radius:9px}
+.friend-list{overflow:auto;flex:1}
+.friend{
+ display:flex;align-items:center;gap:12px;
+ padding:14px;border-bottom:1px solid #eee;cursor:pointer;
+}
+.friend:hover,.friend.active{background:#e9f5f2}
+.avatar{
+ width:45px;height:45px;flex-shrink:0;border-radius:50%;
+ background:#128c7e;color:white;display:grid;place-items:center;
+ font-weight:bold;font-size:18px;overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.friend-info{min-width:0;flex:1}
+.friend-info b{display:block;margin-bottom:5px}
+.friend-info small{color:#777;overflow:hidden;text-overflow:ellipsis;display:block}
+
+.chat{
+ flex:1;min-width:0;display:flex;flex-direction:column;
+ background:#efeae2;
+}
+.welcome{
+ flex:1;display:grid;place-items:center;text-align:center;
+ color:#667781;padding:20px;
+}
+.welcome h2{color:#075e54;margin:12px}
+.chat-head{
+ display:flex;align-items:center;gap:12px;
+ padding:12px;background:#f0f2f5;
+}
+.chat-head .details small{color:#128c7e}
+.back{display:none;width:38px;height:38px;border-radius:50%;background:#128c7e;color:white}
+.messages{
+ flex:1;overflow-y:auto;padding:18px;
+ display:flex;flex-direction:column;gap:10px;
+ background-image:radial-gradient(#d8d0c4 .6px,transparent .6px);
+ background-size:18px 18px;
+}
+.bubble{
+ max-width:78%;padding:10px 13px;background:white;
+ border-radius:12px;align-self:flex-start;
+ overflow-wrap:anywhere;box-shadow:0 1px 2px #0001;
+}
+.bubble.mine{align-self:flex-end;background:#d9fdd3}
+.bubble img{max-width:100%;max-height:260px;border-radius:8px;display:block}
+.bubble audio{max-width:100%;width:230px}
+.time{text-align:right;font-size:10px;color:#777;margin-top:5px}
+.composer{
+ display:flex;align-items:center;gap:8px;
+ padding:10px;background:#f0f2f5;
+}
+.composer input[type=text]{
+ flex:1;min-width:0;padding:13px;border:0;
+ border-radius:25px;outline:none;
+}
+.tool{
+ width:42px;height:42px;border-radius:50%;
+ background:#128c7e;color:white;font-size:18px;flex-shrink:0;
+}
+.send{background:#075e54}
+#recordStatus{text-align:center;color:#d32f2f;font-size:12px;padding:3px}
+#notice{padding:8px;color:#667781;font-size:12px;text-align:center}
+
+@media(max-width:650px){
+ #main{width:100%}
+ .sidebar{width:100%;min-width:0}
+ .chat{display:none}
+ #main.chat-open .sidebar{display:none}
+ #main.chat-open .chat{display:flex}
+ .back{display:block}
+ .bubble{max-width:88%}
+}
+</style>
+</head>
+
+<body>
+<div id="app">
+
+<!-- LOGIN AND SIGNUP -->
+<section class="auth" id="authPage">
+ <div class="auth-card">
+  <div class="logo">💚</div>
+  <h2>Dev WhatsApp</h2>
+
+  <div id="loginForm">
+   <input class="field" id="loginEmail" type="email" placeholder="Email">
+   <input class="field" id="loginPassword" type="password" placeholder="Password">
+   <button class="btn full" id="loginBtn">Login</button>
+   <div class="switch">नया अकाउंट? <span id="goSignup">Signup करें</span></div>
+  </div>
+
+  <div id="signupForm" class="hidden">
+   <input class="field" id="signupName" placeholder="आपका नाम">
+   <input class="field" id="signupEmail" type="email" placeholder="Email">
+   <input class="field" id="signupPassword" type="password" placeholder="Password (6+ अक्षर)">
+   <button class="btn full" id="signupBtn">Create Account</button>
+   <div class="switch">पहले अकाउंट है? <span id="goLogin">Login करें</span></div>
+  </div>
+  <p id="error"></p>
+ </div>
+</section>
+
+<!-- CHAT APP -->
+<div id="main" class="hidden">
+
+ <aside class="sidebar">
+  <div class="top">
+   <div>
+    <h2>💚 Dev WhatsApp</h2>
+    <small id="myName">My Account</small>
+   </div>
+   <button class="logout" id="logoutBtn">Logout</button>
+  </div>
+
+  <div class="search">
+   <input id="filter" placeholder="दोस्त खोजें...">
+  </div>
+
+  <div class="add">
+   <input id="friendEmail" type="email" placeholder="दोस्त का Email">
+   <button id="addFriend">+ Add</button>
+  </div>
+
+  <div id="notice">Email से अपने दोस्तों को जोड़ें</div>
+  <div class="friend-list" id="friendList"></div>
+ </aside>
+
+ <section class="chat">
+  <div class="welcome" id="welcome">
+   <div>
+    <div style="font-size:65px">💬</div>
+    <h2>Dev WhatsApp</h2>
+    <p>बातचीत शुरू करने के लिए दोस्त चुनें।</p>
+   </div>
+  </div>
+
+  <div id="chatScreen" class="hidden" style="flex:1;min-height:0;flex-direction:column">
+   <div class="chat-head">
+    <button class="back" id="backBtn">←</button>
+    <div class="avatar" id="friendAvatar">D</div>
+    <div class="details">
+     <b id="friendName">Friend</b><br>
+     <small>Dev WhatsApp</small>
+    </div>
+   </div>
+
+   <div class="messages" id="messages"></div>
+   <div id="recordStatus"></div>
+
+   <div class="composer">
+    <input type="text" id="message" placeholder="Message लिखें...">
+    <input type="file" id="photoFile" accept="image/*" class="hidden">
+    <button class="tool" id="photoBtn" title="Photo">📎</button>
+    <button class="tool" id="voiceBtn" title="Voice">🎤</button>
+    <button class="tool send" id="sendBtn">➤</button>
+   </div>
+  </div>
+ </section>
+</div>
+</div>
+
+<script type="module">
+
+// FIREBASE IMPORTS
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+
+import {
+ getAuth,onAuthStateChanged,createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,signOut
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+import {
+ getFirestore,doc,setDoc,getDoc,collection,query,
+ where,onSnapshot,addDoc,serverTimestamp,orderBy
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+import {
+ getStorage,ref,uploadBytes,getDownloadURL
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+
+// YOUR DEV WHATSAPP FIREBASE CONFIG
+const firebaseConfig = {
+ apiKey: "AIzaSyA737DhzgubhoVYxx5DDhohjLPzdlz1KU8",
+ authDomain: "dev-whatsapp-7a01f.firebaseapp.com",
+ projectId: "dev-whatsapp-7a01f",
+ storageBucket: "dev-whatsapp-7a01f.firebasestorage.app",
+ messagingSenderId: "1004272691580",
+ appId: "1:1004272691580:web:30430344d13fb984d29cf9"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+const storage=getStorage(app);
+
+const $=id=>document.getElementById(id);
+
+let me=null;
+let friends=[];
+let activeFriend=null;
+let activeChat=null;
+let stopFriends=null;
+let stopMessages=null;
+let recorder=null;
+let chunks=[];
+let busy=false;
+
+function error(t){$("error").textContent=t}
+function makeChatId(a,b){return [a,b].sort().join("_")}
+function safe(s){
+ return String(s??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+ })[c]);
+}
+
+// SWITCH FORMS
+$("goSignup").onclick=()=>{
+ $("loginForm").classList.add("hidden");
+ $("signupForm").classList.remove("hidden");
+ error("");
+};
+$("goLogin").onclick=()=>{
+ $("signupForm").classList.add("hidden");
+ $("loginForm").classList.remove("hidden");
+ error("");
+};
+
+// SIGNUP
+$("signupBtn").onclick=async()=>{
+ if(busy)return;
+ busy=true;
+ try{
+  const name=$("signupName").value.trim();
+  const email=$("signupEmail").value.trim().toLowerCase();
+  const password=$("signupPassword").value;
+
+  if(!name||!email||password.length<6)
+   throw Error("नाम, सही Email और 6 अक्षर का Password डालें।");
+
+  const result=await createUserWithEmailAndPassword(auth,email,password);
+  const user=result.user;
+
+  await setDoc(doc(db,"users",user.uid),{
+   uid:user.uid,name,email,createdAt:serverTimestamp()
+  });
+
+  await setDoc(doc(db,"publicProfiles",user.uid),{
+   uid:user.uid,name,emailLower:email
+  });
+
+  error("अकाउंट बन गया!");
+ }catch(e){error(e.message)}
+ finally{busy=false}
+};
+
+// LOGIN
+$("loginBtn").onclick=async()=>{
+ try{
+  await signInWithEmailAndPassword(
+   auth,$("loginEmail").value.trim(),
+   $("loginPassword").value
+  );
+ }catch(e){error(e.message)}
+};
+
+$("logoutBtn").onclick=()=>signOut(auth);
+
+// AUTH STATE
+onAuthStateChanged(auth,async user=>{
+ if(!user){
+  me=null;
+  if(stopFriends)stopFriends();
+  closeChat();
+  $("main").classList.add("hidden");
+  $("authPage").classList.remove("hidden");
+  return;
+ }
+
+ try{
+  let profile=null;
+  // Signup profile write पूरा होने तक कुछ बार प्रतीक्षा
+  for(let i=0;i<8;i++){
+   const s=await getDoc(doc(db,"users",user.uid));
+   if(s.exists()){profile=s.data();break}
+   await new Promise(r=>setTimeout(r,300));
+  }
+  if(!profile)throw Error("Profile नहीं मिला। दोबारा Login करें।");
+
+  me={...profile,uid:user.uid};
+  $("myName").textContent="👤 "+me.name;
+  $("authPage").classList.add("hidden");
+  $("main").classList.remove("hidden");
+  loadFriends();
+ }catch(e){error(e.message)}
+});
+
+// ADD FRIEND
+$("addFriend").onclick=async()=>{
+ try{
+  const email=$("friendEmail").value.trim().toLowerCase();
+  if(!email)throw Error("दोस्त का Email डालें।");
+  if(email===me.email)throw Error("खुद को Add नहीं कर सकते।");
+
+  const q=query(collection(db,"publicProfiles"),
+   where("emailLower","==",email));
+
+  const result=await new Promise((resolve,reject)=>{
+   let done=false;
+   const unsub=onSnapshot(q,s=>{
+    if(!done){done=true;unsub();resolve(s)}
+   },e=>{if(!done){done=true;unsub();reject(e)}});
+  });
+
+  if(result.empty)throw Error("इस Email से अकाउंट नहीं मिला।");
+
+  const friend=result.docs[0].data();
+  const id=makeChatId(me.uid,friend.uid);
+
+  await setDoc(doc(db,"chats",id),{
+   members:[me.uid,friend.uid].sort(),
+   createdAt:serverTimestamp()
+  },{merge:true});
+
+  $("friendEmail").value="";
+  $("notice").textContent=friend.name+" जुड़ गए!";
+ }catch(e){alert(e.message)}
+};
+
+// LOAD FRIENDS
+function loadFriends(){
+ if(stopFriends)stopFriends();
+
+ const q=query(collection(db,"chats"),
+  where("members","array-contains",me.uid));
+
+ stopFriends=onSnapshot(q,async snap=>{
+  const result=[];
+
+  for(const d of snap.docs){
+   const data=d.data();
+   const uid=data.members.find(x=>x!==me.uid);
+   if(!uid)continue;
+
+   const p=await getDoc(doc(db,"publicProfiles",uid));
+   if(p.exists())result.push({...p.data(),chatId:d.id});
+  }
+
+  friends=result;
+  renderFriends();
+ },e=>alert("Friends: "+e.message));
+}
+
+function renderFriends(){
+ const filter=$("filter").value.toLowerCase();
+ $("friendList").innerHTML="";
+
+ friends.filter(f=>
+  f.name.toLowerCase().includes(filter)||
+  f.emailLower.includes(filter)
+ ).forEach(f=>{
+  const el=document.createElement("div");
+  el.className="friend";
+  el.innerHTML=`
+   <div class="avatar">${safe(f.name[0].toUpperCase())}</div>
+   <div class="friend-info">
+    <b>${safe(f.name)}</b>
+    <small>${safe(f.emailLower)}</small>
+   </div>`;
+  el.onclick=()=>openChat(f);
+  $("friendList").appendChild(el);
+ });
+}
+$("filter").oninput=renderFriends;
+
+// OPEN CHAT
+function openChat(friend){
+ activeFriend=friend;
+ activeChat=friend.chatId;
+
+ $("main").classList.add("chat-open");
+ $("welcome").classList.add("hidden");
+ $("chatScreen").classList.remove("hidden");
+ $("chatScreen").style.display="flex";
+ $("friendName").textContent=friend.name;
+ $("friendAvatar").textContent=friend.name[0].toUpperCase();
+
+ if(stopMessages)stopMessages();
+
+ const q=query(collection(db,"chats",activeChat,"messages"),
+  orderBy("createdAt","asc"));
+
+ stopMessages=onSnapshot(q,snap=>{
+  $("messages").innerHTML="";
+  snap.forEach(d=>{
+   const m=d.data();
+   const el=document.createElement("div");
+   el.className="bubble "+(m.senderId===me.uid?"mine":"");
+
+   let content="";
+   if(m.type==="image"){
+    content=`<img src="${safe(m.url)}" alt="Photo">`;
+   }else if(m.type==="audio"){
+    content=`<audio controls src="${safe(m.url)}"></audio>`;
+   }else{
+    content=`<div>${safe(m.text)}</div>`;
+   }
+
+   const time=m.createdAt?.toDate?
+    m.createdAt.toDate().toLocaleTimeString([],
+    {hour:"2-digit",minute:"2-digit"}):"";
+
+   el.innerHTML=content+`<div class="time">${time}</div>`;
+   $("messages").appendChild(el);
+  });
+  $("messages").scrollTop=$("messages").scrollHeight;
+ },e=>alert("Chat error: "+e.message));
+}
+
+function closeChat(){
+ if(stopMessages)stopMessages();
+ stopMessages=null;
+ activeChat=null;
+ activeFriend=null;
+ if($("main")){
+  $("main").classList.remove("chat-open");
+  $("chatScreen").classList.add("hidden");
+  $("welcome").classList.remove("hidden");
+ }
+}
+$("backBtn").onclick=closeChat;
+
+// SEND MESSAGE
+async function send(data){
+ if(!activeChat||!me)throw Error("पहले दोस्त चुनें।");
+ await addDoc(collection(db,"chats",activeChat,"messages"),{
+  ...data,senderId:me.uid,createdAt:serverTimestamp()
+ });
+}
+
+async function sendText(){
+ const value=$("message").value.trim();
+ if(!value)return;
+ $("message").value="";
+ try{await send({type:"text",text:value})}
+ catch(e){alert(e.message);$("message").value=value}
+}
+$("sendBtn").onclick=sendText;
+$("message").onkeydown=e=>{
+ if(e.key==="Enter")sendText();
+};
+
+// PHOTO
+$("photoBtn").onclick=()=>$("photoFile").click();
+
+$("photoFile").onchange=async e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ if(!activeChat){alert("पहले दोस्त चुनें।");return}
+ if(!file.type.startsWith("image/")){alert("Image चुनें।");return}
+ if(file.size>5*1024*1024){alert("फोटो 5 MB से छोटी रखें।");return}
+
+ try{
+  const path=`chatFiles/${activeChat}/${me.uid}/${Date.now()}.jpg`;
+  const r=ref(storage,path);
+  await uploadBytes(r,file);
+  const url=await getDownloadURL(r);
+  await send({type:"image",url});
+ }catch(e){alert("Photo error: "+e.message)}
+ e.target.value="";
+};
+
+// VOICE MESSAGE
+$("voiceBtn").onclick=async()=>{
+ try{
+  if(recorder?.state==="recording"){
+   recorder.stop();
+   $("voiceBtn").textContent="🎤";
+   return;
+  }
+  if(!activeChat)throw Error("पहले दोस्त चुनें।");
+  if(!navigator.mediaDevices?.getUserMedia)
+   throw Error("Microphone के लिए HTTPS जरूरी है।");
+
+  const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+  chunks=[];
+  recorder=new MediaRecorder(stream);
+
+  recorder.ondataavailable=e=>{
+   if(e.data.size)chunks.push(e.data);
+  };
+
+  recorder.onstop=async()=>{
+   $("recordStatus").textContent="Voice भेजी जा रही है...";
+   try{
+    const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+    const path=`chatFiles/${activeChat}/${me.uid}/${Date.now()}.webm`;
+    const r=ref(storage,path);
+    await uploadBytes(r,blob);
+    const url=await getDownloadURL(r);
+    await send({type:"audio",url});
+   }catch(e){alert("Voice error: "+e.message)}
+   finally{
+    stream.getTracks().forEach(t=>t.stop());
+    $("recordStatus").textContent="";
+    $("voiceBtn").textContent="🎤";
+   }
+  };
+
+  recorder.start();
+  $("voiceBtn").textContent="⏹";
+  $("recordStatus").textContent="🔴 Recording... रोकने के लिए ⏹ दबाएँ";
+ }catch(e){alert(e.message)}
+};
+
+</script>
+</body>
+</html>
